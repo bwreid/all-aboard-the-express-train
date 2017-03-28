@@ -2,19 +2,24 @@ var express = require('express')
 var app = express()
 var port = process.env.PORT || 3000
 
-app.get('/', function (req, res) {
-  // What status code gets sent by default?
+app.get('/', index)
+app.get('/ping', ping)
+app.listen(port, listenHandler)
+
+/////////////////////////////////////////////////////////
+
+function index (req, res) {
   res.send('Hello World!')
-})
+}
 
-app.get('/ping', function (req, res) {
-  res.send('pong!')
-})
+function ping (req, res) {
+  res.status(418).send('pong!')
+}
 
-app.listen(port, function () {
+function listenHandler () {
   console.log(`Example app listening on port ${port}!`)
-})
+}
 
 // NEXT STEPS:
-// - Let's name all of the functions we're using as arguments and separate them
-// - Respond with a different status code on the '/ping' route
+// - It's annoying restarting our server. Let's install nodemon.
+// - Create a script so that we only need to type `npm run dev`
