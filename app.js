@@ -9,7 +9,8 @@ app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', filterTrains, trainsIndex)
 app.get('/trains/:index', retrieveTrain, trainsShow)
-app.post('/trains', trainsCreate)
+app.post('/trains', validateTrain, trainsCreate)
+app.put('/trains/:index', retrieveTrain, validateTrain, trainsUpdate)
 app.delete('/trains/:index', retrieveTrain, trainsDestroy)
 app.use(errorHandler)
 app.listen(port, listenHandler)
@@ -44,7 +45,7 @@ function trainsShow (req, res) {
 }
 
 function trainsDestroy (req, res) {
-  trains.splice(index, 1)
+  trains.splice(req.params.index, 1)
   res.json(req.train)
 }
 
@@ -59,9 +60,28 @@ function retrieveTrain (req, res, next) {
 
 function trainsCreate (req, res) {
   var train = req.body
-  train.number_of_cars = parseInt(train.number_of_cars)
   trains.push(train)
   res.status(201).json(train)
+}
+
+function trainsUpdate (req, res) {
+  trains.splice(req.params.index, 1, req.train)
+  res.json(req.train)
+}
+
+function validateTrain (req, res, next) {
+  var train = req.body
+  var error = { status: 422, message: `Invalid train.` }
+
+  if (!(train.name && train.color && train.number_of_cars)) next(error)
+
+  req.train = {
+    name: train.name,
+    color: train.color,
+    number_of_cars: parseInt(train.number_of_cars)
+  }
+
+  next()
 }
 
 function errorHandler (err, req, res, next) {
@@ -73,10 +93,7 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - What if your user enters information that is not allowed? For example:
-//   POST { name: 'Allen', role: 'Professional Troll' }
-//   Add validation to your POST route so that a user can only POST keys
-//   that you want to allow.
-// - You have all the tools you need to make a PUT route. Create a PUT route
-//   that allows you to update an existing train. If the index provided does
-//   not return a train, throw an error just like before.
+// - Together, let's create a new resource called `passengers`
+//   where each passenger includes a full_name, ticket_id, and date_of_purchase.
+// - We're going to create the index route for passengers, reusing the code
+//   from the trains index route, via a closure
