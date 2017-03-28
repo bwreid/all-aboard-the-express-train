@@ -3,9 +3,11 @@
 var express = require('express')
 var app = express()
 var port = process.env.PORT || 3000
+var trains = require('./trains')
 
 app.get('/', index)
 app.get('/ping', ping)
+app.get('/trains', trainsIndex)
 app.listen(port, listenHandler)
 
 /////////////////////////////////////////////////////////
@@ -18,13 +20,15 @@ function ping (req, res) {
   res.status(418).send('pong!')
 }
 
+function trainsIndex (req, res) {
+  res.send(JSON.stringify(trains))
+}
+
 function listenHandler () {
   console.log(`Example app listening on port ${port}!`)
 }
 
 // NEXT STEPS:
-// - Let's make a new resource called trains. Create a new file, `trains.js`,
-//   that exports an array. Input at least two trains (as objects) that have at
-//   least the following keys: name, number_of_cars, color
-// - Require the resource into this file.
-// - Create a new route that retrieves all the trains.
+// - Instead of sending back a string, let's respond with json
+// - Create a show route so that we return a single train based on the array's
+//   index. The terminology for this is "route parameters"
