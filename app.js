@@ -1,13 +1,15 @@
 var express = require('express')
+var bodyParser = require('body-parser')
 var app = express()
 var port = process.env.PORT || 3000
 var trains = require('./trains')
 
+app.use(bodyParser.json())
 app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', filterTrains, trainsIndex)
 app.get('/trains/:index', retrieveTrain, trainsShow)
-app.post('/trains', parseBody, trainsCreate)
+app.post('/trains', trainsCreate)
 app.delete('/trains/:index', retrieveTrain, trainsDestroy)
 app.use(errorHandler)
 app.listen(port, listenHandler)
@@ -42,7 +44,7 @@ function trainsShow (req, res) {
 }
 
 function trainsDestroy (req, res) {
-  trains.splice(index, 1)
+  trains.splice(req.params.index, 1)
   res.json(req.train)
 }
 
@@ -57,19 +59,9 @@ function retrieveTrain (req, res, next) {
 
 function trainsCreate (req, res) {
   var train = req.body
+  train.number_of_cars = parseInt(train.number_of_cars)
   trains.push(train)
   res.status(201).json(train)
-}
-
-function parseBody (req, res, next) {
-  var body = []
-  req.on('data', function (data) {
-    body.push(data)
-  }).on('end', function () {
-    req.body = JSON.parse(body.join(''))
-    req.body.number_of_cars = parseInt(req.body.number_of_cars)
-    next()
-  })
 }
 
 function errorHandler (err, req, res, next) {
@@ -81,6 +73,10 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - This is a pretty common process, so someone's already made a package
-//   to do exactly what we're doing -- only better!
-// - Install `body-parser` and read the documentation on how to use it.
+// - What if your user enters information that is not allowed? For example:
+//   POST { name: 'Allen', role: 'Professional Troll' }
+//   Add validation to your POST route so that a user can only POST keys
+//   that you want to allow.
+// - You have all the tools you need to make a PUT route. Create a PUT route
+//   that allows you to update an existing train. If the index provided does
+//   not return a train, throw an error just like before.
