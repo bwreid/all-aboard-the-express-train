@@ -7,7 +7,7 @@ app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', filterTrains, trainsIndex)
 app.get('/trains/:index', retrieveTrain, trainsShow)
-app.post('/trains', trainsCreate)
+app.post('/trains', parseBody, trainsCreate)
 app.delete('/trains/:index', retrieveTrain, trainsDestroy)
 app.use(errorHandler)
 app.listen(port, listenHandler)
@@ -42,7 +42,7 @@ function trainsShow (req, res) {
 }
 
 function trainsDestroy (req, res) {
-  trains.splice(index, 1)
+  trains.splice(req.params.index, 1)
   res.json(req.train)
 }
 
@@ -56,14 +56,19 @@ function retrieveTrain (req, res, next) {
 }
 
 function trainsCreate (req, res) {
+  var train = req.body
+  trains.push(train)
+  res.status(201).json(train)
+}
+
+function parseBody (req, res, next) {
   var body = []
   req.on('data', function (data) {
     body.push(data)
   }).on('end', function () {
-    var train = JSON.parse(body.join(''))
-    train.number_of_cars = parseInt(train.number_of_cars)
-    trains.push(train)
-    res.status(201).json(train)
+    req.body = JSON.parse(body.join(''))
+    req.body.number_of_cars = parseInt(req.body.number_of_cars)
+    next()
   })
 }
 
@@ -76,6 +81,6 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - This process is a bit unwieldy and we're constantly going to be sending
-//   information as part of a body. Let's refactor out how we get the request
-//   body and create some middleware.
+// - This is a pretty common process, so someone's already made a package
+//   to do exactly what we're doing -- only better!
+// - Install `body-parser` and read the documentation on how to use it.
