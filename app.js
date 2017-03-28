@@ -5,7 +5,7 @@ var trains = require('./trains')
 
 app.get('/', index)
 app.get('/ping', ping)
-app.get('/trains', trainsIndex)
+app.get('/trains', filterTrains, trainsIndex)
 app.get('/trains/:index', retrieveTrain, trainsShow)
 app.delete('/trains/:index', retrieveTrain, trainsDestroy)
 app.use(errorHandler)
@@ -22,7 +22,18 @@ function ping (req, res) {
 }
 
 function trainsIndex (req, res) {
-  res.json(trains)
+  res.json(req.trains)
+}
+
+function filterTrains (req, res, next) {
+  var num = parseInt(req.query.number_of_cars)
+  if (num) {
+    req.trains = trains.filter(train => train.number_of_cars === num)
+  } else {
+    req.trains = trains
+  }
+
+  next()
 }
 
 function trainsShow (req, res) {
@@ -30,7 +41,7 @@ function trainsShow (req, res) {
 }
 
 function trainsDestroy (req, res) {
-  trains.splice(index, 1)
+  trains.splice(req.params.index, 1)
   res.json(req.train)
 }
 
@@ -52,8 +63,7 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - We've now added middleware! Middleware is an awesome feature of express
-//   that we can and should rely upon heavily.
-// - Before we move on to POST and PUT, let's use query parameters to refine
-//   our trains index. We want the following URL to only return trains with
-//   exactly 3 cars: `/trains?number_of_cars=3`
+// - How can we POST to our API? This one is pretty tricky and requires
+//   us to use some native Node methods:
+//   req.on('data', callback)
+//      .on('end', callback)
