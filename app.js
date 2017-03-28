@@ -9,6 +9,7 @@ app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', trainsIndex)
 app.get('/trains/:index', trainsShow)
+app.delete('/trains/:index', trainsDestroy)
 app.listen(port, listenHandler)
 
 /////////////////////////////////////////////////////////
@@ -26,10 +27,26 @@ function trainsIndex (req, res) {
 }
 
 function trainsShow (req, res) {
-  // What happens if we enter an index that doesn't return anything?
   var index = req.params.index
   var train = trains[index]
-  res.json(train)
+
+  if (train) {
+    res.json(train)
+  } else {
+    res.status(404).json({ message: `No train found for index ${index}.` })
+  }
+}
+
+function trainsDestroy (req, res) {
+  var index = req.params.index
+  var train = trains[index]
+
+  if (train) {
+    trains.splice(index, 1)
+    res.json(train)
+  } else {
+    res.status(404).json({ message: `No train found for index ${index}.` })
+  }
 }
 
 function listenHandler () {
@@ -37,9 +54,6 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - If the index entered for the trains show route doesn't return a train,
-//   send back a new status code and an error message:
-//   { message: 'No train found for index 23.' }
-// - Create a new delete route that removes a train from the array of trains.
-//   If the index entered does not return a train, return a similar error
-//   message to the one above.
+// - We now have some similar code. We are looking to see if the train exists
+//   in the same way and we are responding to an error the same way. We can
+//   refactor this code with middleware.
