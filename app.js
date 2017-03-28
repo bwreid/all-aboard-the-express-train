@@ -1,5 +1,3 @@
-// Did you install nodemon using --save-dev?
-
 var express = require('express')
 var app = express()
 var port = process.env.PORT || 3000
@@ -54,6 +52,4 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - We now have some similar code. We are looking to see if the train exists
-//   in the same way and we are responding to an error the same way. We can
-//   refactor this code with middleware.
+// -
