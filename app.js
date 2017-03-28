@@ -7,6 +7,7 @@ app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', filterTrains, trainsIndex)
 app.get('/trains/:index', retrieveTrain, trainsShow)
+app.post('/trains', trainsCreate)
 app.delete('/trains/:index', retrieveTrain, trainsDestroy)
 app.use(errorHandler)
 app.listen(port, listenHandler)
@@ -41,7 +42,7 @@ function trainsShow (req, res) {
 }
 
 function trainsDestroy (req, res) {
-  trains.splice(index, 1)
+  trains.splice(req.params.index, 1)
   res.json(req.train)
 }
 
@@ -54,6 +55,18 @@ function retrieveTrain (req, res, next) {
   req.train ? next() : next(error)
 }
 
+function trainsCreate (req, res) {
+  var body = []
+  req.on('data', function (data) {
+    body.push(data)
+  }).on('end', function () {
+    var train = JSON.parse(body.join(''))
+    train.number_of_cars = parseInt(train.number_of_cars)
+    trains.push(train)
+    res.status(201).json(train)
+  })
+}
+
 function errorHandler (err, req, res, next) {
   res.status(err.status).json(err)
 }
@@ -63,7 +76,6 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// - How can we POST to our API? This one is pretty tricky and requires
-//   us to use some native Node methods:
-//   req.on('data', callback)
-//      .on('end', callback)
+// - This process is a bit unwieldy and we're constantly going to be sending
+//   information as part of a body. Let's refactor out how we get the request
+//   body and create some middleware.
