@@ -6,8 +6,9 @@ var trains = require('./trains')
 app.get('/', index)
 app.get('/ping', ping)
 app.get('/trains', trainsIndex)
-app.get('/trains/:index', trainsShow)
-app.delete('/trains/:index', trainsDestroy)
+app.get('/trains/:index', retrieveTrain, trainsShow)
+app.delete('/trains/:index', retrieveTrain, trainsDestroy)
+app.use(errorHandler)
 app.listen(port, listenHandler)
 
 /////////////////////////////////////////////////////////
@@ -25,26 +26,25 @@ function trainsIndex (req, res) {
 }
 
 function trainsShow (req, res) {
-  var index = req.params.index
-  var train = trains[index]
-
-  if (train) {
-    res.json(train)
-  } else {
-    res.status(404).json({ message: `No train found for index ${index}.` })
-  }
+  res.json(req.train)
 }
 
 function trainsDestroy (req, res) {
+  trains.splice(index, 1)
+  res.json(req.train)
+}
+
+function retrieveTrain (req, res, next) {
   var index = req.params.index
   var train = trains[index]
+  var error = { status: 404, message: `No train found for index ${index}.` }
 
-  if (train) {
-    trains.splice(index, 1)
-    res.json(train)
-  } else {
-    res.status(404).json({ message: `No train found for index ${index}.` })
-  }
+  req.train = train
+  req.train ? next() : next(error)
+}
+
+function errorHandler (err, req, res, next) {
+  res.status(err.status).json(err)
 }
 
 function listenHandler () {
@@ -52,4 +52,8 @@ function listenHandler () {
 }
 
 // NEXT STEPS:
-// -
+// - We've now added middleware! Middleware is an awesome feature of express
+//   that we can and should rely upon heavily.
+// - Before we move on to POST and PUT, let's use query parameters to refine
+//   our trains index. We want the following URL to only return trains with
+//   exactly 3 cars: `/trains?number_of_cars=3`
